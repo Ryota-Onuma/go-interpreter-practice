@@ -1,0 +1,7 @@
+var a = 1;
+if hoge {
+    var c = 10.21;
+}
+a++;
+// hogehoge
+var b = false;
