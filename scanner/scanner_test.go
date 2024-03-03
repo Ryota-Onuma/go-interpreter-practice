@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"fmt"
+	"lox-by-go/token"
 	"testing"
 )
 
@@ -18,148 +19,148 @@ func TestScanner(t *testing.T) {
 
 	testCases := []struct {
 		input      string
-		wantTokens []Token
+		wantTokens []token.Token
 		wantErrors []error
 	}{
 		{
 			input:      "(",
-			wantTokens: []Token{{Type: LEFT_PAREN, RawToken: "(", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.LEFT_PAREN, RawToken: "(", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      ")",
-			wantTokens: []Token{{Type: RIGHT_PAREN, RawToken: ")", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.RIGHT_PAREN, RawToken: ")", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      "{",
-			wantTokens: []Token{{Type: LEFT_BRACE, RawToken: "{", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.LEFT_BRACE, RawToken: "{", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      "}",
-			wantTokens: []Token{{Type: RIGHT_BRACE, RawToken: "}", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.RIGHT_BRACE, RawToken: "}", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      ",",
-			wantTokens: []Token{{Type: COMMA, RawToken: ",", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.COMMA, RawToken: ",", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      ".",
-			wantTokens: []Token{{Type: DOT, RawToken: ".", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.DOT, RawToken: ".", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      "-",
-			wantTokens: []Token{{Type: MINUS, RawToken: "-", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.MINUS, RawToken: "-", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      "+",
-			wantTokens: []Token{{Type: PLUS, RawToken: "+", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.PLUS, RawToken: "+", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      ";",
-			wantTokens: []Token{{Type: SEMICOLON, RawToken: ";", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.SEMICOLON, RawToken: ";", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      "*",
-			wantTokens: []Token{{Type: STAR, RawToken: "*", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.STAR, RawToken: "*", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      "!=",
-			wantTokens: []Token{{Type: BANG_EQUAL, RawToken: "!=", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.NOT_EQUAL, RawToken: "!=", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      "=",
-			wantTokens: []Token{{Type: EQUAL, RawToken: "=", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.EQUAL, RawToken: "=", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      "<=",
-			wantTokens: []Token{{Type: LESS_EQUAL, RawToken: "<=", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.LESS_EQUAL, RawToken: "<=", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      ">=",
-			wantTokens: []Token{{Type: GREATER_EQUAL, RawToken: ">=", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.GREATER_EQUAL, RawToken: ">=", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      "/",
-			wantTokens: []Token{{Type: SLASH, RawToken: "/", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.SLASH, RawToken: "/", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      "\n",
-			wantTokens: []Token{{Type: EOF}},
+			wantTokens: []token.Token{{Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      "123",
-			wantTokens: []Token{{Type: INTEGER, RawToken: "123", Literal: 123, Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.INTEGER, RawToken: "123", Literal: 123, Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      "123.456",
-			wantTokens: []Token{{Type: FLOAT, RawToken: "123.456", Literal: 123.456, Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.FLOAT, RawToken: "123.456", Literal: 123.456, Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      "abc",
-			wantTokens: []Token{{Type: IDENTIFIER, RawToken: "abc", Literal: "abc", Line: 1}, {Type: EOF}},
+			wantTokens: []token.Token{{Type: token.IDENTIFIER, RawToken: "abc", Literal: "abc", Line: 1}, {Type: token.EOF}},
 			wantErrors: []error{},
 		},
 		{
 			input:      "@",
-			wantTokens: []Token{{Type: EOF}},
+			wantTokens: []token.Token{{Type: token.EOF}},
 			wantErrors: []error{fmt.Errorf("line 1: Unexpected character: @")},
 		},
 		{
 			input: "var a = 1;",
-			wantTokens: []Token{
-				{Type: VAR, RawToken: "var", Line: 1},
-				{Type: IDENTIFIER, RawToken: "a", Literal: "a", Line: 1},
-				{Type: EQUAL, RawToken: "=", Line: 1},
-				{Type: INTEGER, RawToken: "1", Literal: 1, Line: 1},
-				{Type: SEMICOLON, RawToken: ";", Line: 1},
-				{Type: EOF},
+			wantTokens: []token.Token{
+				{Type: token.VAR, RawToken: "var", Line: 1},
+				{Type: token.IDENTIFIER, RawToken: "a", Literal: "a", Line: 1},
+				{Type: token.EQUAL, RawToken: "=", Line: 1},
+				{Type: token.INTEGER, RawToken: "1", Literal: 1, Line: 1},
+				{Type: token.SEMICOLON, RawToken: ";", Line: 1},
+				{Type: token.EOF},
 			},
 			wantErrors: []error{},
 		},
 		{
 			input: inputWithNewLines,
-			wantTokens: []Token{
-				{Type: VAR, RawToken: "var", Literal: nil, Line: 1},
-				{Type: IDENTIFIER, RawToken: "a", Literal: "a", Line: 1},
-				{Type: EQUAL, RawToken: "=", Literal: nil, Line: 1},
-				{Type: INTEGER, RawToken: "1", Literal: 1, Line: 1},
-				{Type: SEMICOLON, RawToken: ";", Literal: nil, Line: 1},
-				{Type: IF, RawToken: "if", Literal: nil, Line: 2},
-				{Type: IDENTIFIER, RawToken: "hoge", Literal: "hoge", Line: 2},
-				{Type: LEFT_BRACE, RawToken: "{", Literal: nil, Line: 2},
-				{Type: VAR, RawToken: "var", Literal: nil, Line: 3},
-				{Type: IDENTIFIER, RawToken: "c", Literal: "c", Line: 3},
-				{Type: EQUAL, RawToken: "=", Literal: nil, Line: 3},
-				{Type: FLOAT, RawToken: "10.21", Literal: 10.21, Line: 3},
-				{Type: SEMICOLON, RawToken: ";", Literal: nil, Line: 3},
-				{Type: RIGHT_BRACE, RawToken: "}", Literal: nil, Line: 4},
-				{Type: IDENTIFIER, RawToken: "a", Literal: "a", Line: 5},
-				{Type: PLUS, RawToken: "+", Literal: nil, Line: 5},
-				{Type: PLUS, RawToken: "+", Literal: nil, Line: 5},
-				{Type: SEMICOLON, RawToken: ";", Literal: nil, Line: 5},
-				{Type: VAR, RawToken: "var", Literal: nil, Line: 7},
-				{Type: IDENTIFIER, RawToken: "b", Literal: "b", Line: 7},
-				{Type: EQUAL, RawToken: "=", Literal: nil, Line: 7},
-				{Type: TRUE, RawToken: "false", Literal: false, Line: 7},
-				{Type: SEMICOLON, RawToken: ";", Literal: nil, Line: 7},
-				{Type: EOF, RawToken: "", Literal: nil, Line: 0},
+			wantTokens: []token.Token{
+				{Type: token.VAR, RawToken: "var", Literal: nil, Line: 1},
+				{Type: token.IDENTIFIER, RawToken: "a", Literal: "a", Line: 1},
+				{Type: token.EQUAL, RawToken: "=", Literal: nil, Line: 1},
+				{Type: token.INTEGER, RawToken: "1", Literal: 1, Line: 1},
+				{Type: token.SEMICOLON, RawToken: ";", Literal: nil, Line: 1},
+				{Type: token.IF, RawToken: "if", Literal: nil, Line: 2},
+				{Type: token.IDENTIFIER, RawToken: "hoge", Literal: "hoge", Line: 2},
+				{Type: token.LEFT_BRACE, RawToken: "{", Literal: nil, Line: 2},
+				{Type: token.VAR, RawToken: "var", Literal: nil, Line: 3},
+				{Type: token.IDENTIFIER, RawToken: "c", Literal: "c", Line: 3},
+				{Type: token.EQUAL, RawToken: "=", Literal: nil, Line: 3},
+				{Type: token.FLOAT, RawToken: "10.21", Literal: 10.21, Line: 3},
+				{Type: token.SEMICOLON, RawToken: ";", Literal: nil, Line: 3},
+				{Type: token.RIGHT_BRACE, RawToken: "}", Literal: nil, Line: 4},
+				{Type: token.IDENTIFIER, RawToken: "a", Literal: "a", Line: 5},
+				{Type: token.PLUS, RawToken: "+", Literal: nil, Line: 5},
+				{Type: token.PLUS, RawToken: "+", Literal: nil, Line: 5},
+				{Type: token.SEMICOLON, RawToken: ";", Literal: nil, Line: 5},
+				{Type: token.VAR, RawToken: "var", Literal: nil, Line: 7},
+				{Type: token.IDENTIFIER, RawToken: "b", Literal: "b", Line: 7},
+				{Type: token.EQUAL, RawToken: "=", Literal: nil, Line: 7},
+				{Type: token.TRUE, RawToken: "false", Literal: false, Line: 7},
+				{Type: token.SEMICOLON, RawToken: ";", Literal: nil, Line: 7},
+				{Type: token.EOF, RawToken: "", Literal: nil, Line: 0},
 			},
 			wantErrors: []error{},
 		},

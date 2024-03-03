@@ -2,12 +2,13 @@ package scanner
 
 import (
 	"fmt"
+	"lox-by-go/token"
 	"strconv"
 )
 
 type Scanner struct {
 	source    string
-	tokens    []Token
+	tokens    []token.Token
 	start     int
 	currentAt int
 	line      int
@@ -18,6 +19,19 @@ func NewScanner(source string) *Scanner {
 	return &Scanner{source: source, line: 1}
 }
 
+func (s *Scanner) Reset() string {
+	s.tokens = []token.Token{}
+	s.start = 0
+	s.currentAt = 0
+	s.line = 1
+	s.errors = []error{}
+	return s.source
+}
+
+func (s *Scanner) SetSource(source string) {
+	s.source = source
+}
+
 func (s *Scanner) GetErrors() []error {
 	return s.errors
 }
@@ -26,7 +40,7 @@ func (s *Scanner) addError(message string) {
 	s.errors = append(s.errors, fmt.Errorf("line %d: %s", s.line, message))
 }
 
-func (s *Scanner) Tokens() []Token {
+func (s *Scanner) Tokens() []token.Token {
 	return s.tokens
 }
 
@@ -39,15 +53,11 @@ func (s *Scanner) ScanTokens() {
 		}
 		s.advance()
 	}
-	s.tokens = append(s.tokens, Token{Type: EOF})
+	s.tokens = append(s.tokens, token.Token{Type: token.LINE_BREAK}, token.Token{Type: token.EOF})
 }
 
 func (s *Scanner) isAtEnd() bool {
 	return s.currentAt >= len([]rune(s.source))-1
-}
-
-func (s *Scanner) isAtStart() bool {
-	return s.currentAt == 0
 }
 
 func (s *Scanner) scanToken() {
@@ -58,69 +68,69 @@ func (s *Scanner) scanToken() {
 
 	switch c {
 	case '(':
-		t := s.createToken(LEFT_PAREN)
+		t := s.createToken(token.LEFT_PAREN)
 		s.addToken(t)
 	case ')':
-		t := s.createToken(RIGHT_PAREN)
+		t := s.createToken(token.RIGHT_PAREN)
 		s.addToken(t)
 	case '{':
-		t := s.createToken(LEFT_BRACE)
+		t := s.createToken(token.LEFT_BRACE)
 		s.addToken(t)
 	case '}':
-		t := s.createToken(RIGHT_BRACE)
+		t := s.createToken(token.RIGHT_BRACE)
 		s.addToken(t)
 	case ',':
-		t := s.createToken(COMMA)
+		t := s.createToken(token.COMMA)
 		s.addToken(t)
 	case '.':
-		t := s.createToken(DOT)
+		t := s.createToken(token.DOT)
 		s.addToken(t)
 	case '-':
-		t := s.createToken(MINUS)
+		t := s.createToken(token.MINUS)
 		s.addToken(t)
 	case '+':
-		t := s.createToken(PLUS)
+		t := s.createToken(token.PLUS)
 		s.addToken(t)
 	case ';':
-		t := s.createToken(SEMICOLON)
+		t := s.createToken(token.SEMICOLON)
 		s.addToken(t)
 	case '*':
-		t := s.createToken(STAR)
+		t := s.createToken(token.STAR)
 		s.addToken(t)
 	case '!':
 		if s.peekNext() == '=' {
 			s.advance()
-			t := s.createToken(BANG_EQUAL)
+			t := s.createToken(token.NOT_EQUAL)
 			s.addToken(t)
 		} else {
-			t := s.createToken(BANG)
+			t := s.createToken(token.BANG)
 			s.addToken(t)
 		}
 	case '=':
 		if s.peekNext() == '=' {
 			s.advance()
-			t := s.createToken(EQUAL_EQUAL)
+			t := s.createToken(token.EQUAL_EQUAL)
 			s.addToken(t)
 		} else {
-			t := s.createToken(EQUAL)
+			t := s.createToken(token.EQUAL)
 			s.addToken(t)
 		}
 	case '<':
 		if s.peekNext() == '=' {
 			s.advance()
-			t := s.createToken(LESS_EQUAL)
+			t := s.createToken(token.LESS_EQUAL)
 			s.addToken(t)
 		} else {
-			t := s.createToken(LESS)
+			t := s.createToken(token.LESS)
 			s.addToken(t)
 		}
 	case '>':
 		if s.peekNext() == '=' {
 			s.advance()
-			t := s.createToken(GREATER_EQUAL)
+			t := s.createToken(token.GREATER_EQUAL)
 			s.addToken(t)
 		} else {
-			t := s.createToken(GREATER)
+			t := s.createToken(token.GREATER)
 			s.addToken(t)
 		}
 	case '/':
@@ -130,12 +140,14 @@ func (s *Scanner) scanToken() {
 				s.advance()
 			}
 		} else {
-			t := s.createToken(SLASH)
+			t := s.createToken(token.SLASH)
 			s.addToken(t)
 		}
 	case '"':
 		s.createString()
 	case '\n':
+		t := s.createToken(token.LINE_BREAK)
+		s.addToken(t)
 		s.line++
 	default:
 		if isDigit(c) {
@@ -172,8 +184,8 @@ func (s *Scanner) peekNextNext() rune {
 	return []rune(s.source)[s.currentAt+2]
 }
 
-func (s *Scanner) createToken(tokenType TokenType) Token {
-	return Token{
+func (s *Scanner) createToken(tokenType token.TokenType) token.Token {
+	return token.Token{
 		Type:     tokenType,
 		RawToken: "",
 		Literal:  nil,
@@ -181,7 +193,7 @@ func (s *Scanner) createToken(tokenType TokenType) Token {
 	}
 }
 
-func (s *Scanner) addToken(token Token) {
+func (s *Scanner) addToken(token token.Token) {
 	if token.RawToken == "" {
 		text := []rune(s.source)[s.start : s.currentAt+1]
 		token.RawToken = string(text)
@@ -220,7 +232,7 @@ func (s *Scanner) createNumber() {
 			s.addError(err.Error())
 			return
 		}
-		t := s.createToken(FLOAT)
+		t := s.createToken(token.FLOAT)
 		t.Literal = floatLiteral
 		s.addToken(t)
 		return
@@ -232,7 +244,7 @@ func (s *Scanner) createNumber() {
 		s.addError(err.Error())
 		return
 	}
-	t := s.createToken(INTEGER)
+	t := s.createToken(token.INTEGER)
 	t.Literal = intLiteral
 	s.addToken(t)
 }
@@ -251,7 +263,7 @@ func (s *Scanner) createString() {
 	}
 
 	s.advance()
-	t := s.createToken(STRING)
+	t := s.createToken(token.STRING)
 	textLiteral := string([]rune(s.source)[s.start+1 : s.currentAt+1])
 	t.Literal = textLiteral
 	s.addToken(t)
@@ -263,21 +275,22 @@ func (s *Scanner) identifier() {
 	}
 	textLiteral := string([]rune(s.source)[s.start : s.currentAt+1])
 
-	if textLiteral == "true" || textLiteral == "false" {
-		t := s.createToken(TRUE)
+	// 予約語かどうかを判定する
+	tokenType, ok := keywords[textLiteral]
+	if !ok {
+		t := s.createToken(token.IDENTIFIER)
+		t.Literal = textLiteral
+		s.addToken(t)
+		return
+	}
+
+	if tokenType == token.TRUE || tokenType == token.FALSE {
+		t := s.createToken(token.TRUE)
 		t.Literal = textLiteral == "true"
 		s.addToken(t)
 		return
 	}
 
-	// 予約語かどうかを判定する
-	tokenType, ok := keywords[textLiteral]
-	if !ok {
-		t := s.createToken(IDENTIFIER)
-		t.Literal = textLiteral
-		s.addToken(t)
-		return
-	}
 	t := s.createToken(tokenType)
 	s.addToken(t)
 }

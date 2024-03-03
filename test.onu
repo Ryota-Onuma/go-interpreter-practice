@@ -1,7 +1,3 @@
-var a = 1;
-if hoge {
-    var c = 10.21;
-}
-a++;
-// hogehoge
-var b = false;
+a + 1 + 10 / 3
+var hoge = 1;
+hoge + 1.5 

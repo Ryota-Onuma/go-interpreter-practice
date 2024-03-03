@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"lox-by-go/parser"
 	"lox-by-go/scanner"
 	"os"
 )
@@ -37,19 +38,13 @@ func runFile() {
 	if err != nil {
 		panic(err)
 	}
-
 	s := scanner.NewScanner(string(data[:count]))
-	fmt.Println(string(data[:count]))
-	fmt.Println()
-	s.ScanTokens()
-	if len(s.GetErrors()) > 0 {
-		for _, err := range s.GetErrors() {
-			fmt.Println(err)
-		}
+	parser := parser.NewParser(s)
+	program, err := parser.Parse()
+	if err != nil {
+		fmt.Println(err)
 	}
+	fmt.Println(program)
 
-	for _, token := range s.Tokens() {
-		fmt.Println(token)
-	}
 	fmt.Println()
 }

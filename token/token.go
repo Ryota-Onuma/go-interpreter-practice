@@ -1,6 +1,4 @@
-package scanner
-
-import "fmt"
+package token
 
 type TokenType string
 
@@ -16,9 +14,10 @@ const (
 	SEMICOLON   TokenType = "SEMICOLON"   // ;
 	SLASH       TokenType = "SLASH"       // /
 	STAR        TokenType = "STAR"        // *
+	LINE_BREAK  TokenType = "LINE_BREAK"  // \n
 
 	BANG          TokenType = "BANG"          // !
-	BANG_EQUAL    TokenType = "BANG_EQUAL"    // !=
+	NOT_EQUAL     TokenType = "NOT_EQUAL"     // !=
 	EQUAL         TokenType = "EQUAL"         // =
 	EQUAL_EQUAL   TokenType = "EQUAL_EQUAL"   // ==
 	GREATER       TokenType = "GREATER"       // >
@@ -58,6 +57,6 @@ type Token struct {
 	Line     int // 行番号
 }
 
-func (t Token) String() {
-	fmt.Printf("%+v", t)
+func (t Token) String() string {
+	return ""
 }
