@@ -285,7 +285,7 @@ func (s *Scanner) identifier() {
 	}
 
 	if tokenType == token.TRUE || tokenType == token.FALSE {
-		t := s.createToken(token.TRUE)
+		t := s.createToken(tokenType)
 		t.Literal = textLiteral == "true"
 		s.addToken(t)
 		return

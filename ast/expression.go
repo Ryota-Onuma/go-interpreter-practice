@@ -56,3 +56,13 @@ func (ie InfixExpression) expressionNode() {}
 func (ie InfixExpression) String() string {
 	return ""
 }
+
+type Boolean struct {
+	Token token.Token
+	Value bool
+}
+
+func (b Boolean) expressionNode() {}
+func (b Boolean) String() string {
+	return ""
+}
