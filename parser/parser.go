@@ -33,6 +33,7 @@ func NewParser(s *scanner.Scanner) *Parser {
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.TRUE, p.parseBoolean)
 	p.registerPrefix(token.FALSE, p.parseBoolean)
+	p.registerPrefix(token.LEFT_PAREN, p.parseGroupedExpression)
 
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
 	p.registerInfix(token.MINUS, p.parseInfixExpression)
@@ -277,4 +278,15 @@ func (p *Parser) parseBoolean() ast.Expression {
 		Token: p.currentToken,
 		Value: p.currentToken.Type == token.TRUE,
 	}
+}
+
+func (p *Parser) parseGroupedExpression() ast.Expression {
+	p.advance()
+	expression := p.parseExpression(LOWEST)
+	if p.nextToken().Type != token.RIGHT_PAREN {
+		p.addError(fmt.Sprintf("line %v; expected ')', but got %s", p.currentToken.Line, p.currentToken.RawToken))
+		return nil
+	}
+	p.advance()
+	return expression
 }
