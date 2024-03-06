@@ -28,12 +28,15 @@ func NewParser(s *scanner.Scanner) *Parser {
 
 	p.registerPrefix(token.IDENTIFIER, p.parseIdentifier)
 	p.registerPrefix(token.INTEGER, p.parseIntegerLiteral)
+	p.registerPrefix(token.STRING, p.parseStringLiteral)
 	p.registerPrefix(token.FLOAT, p.parseFloatLiteral)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.TRUE, p.parseBoolean)
 	p.registerPrefix(token.FALSE, p.parseBoolean)
 	p.registerPrefix(token.LEFT_PAREN, p.parseGroupedExpression)
+	p.registerPrefix(token.IF, p.parseIfExpression)
+	p.registerPrefix(token.FUN, p.parseFuncExpression)
 
 	p.registerInfix(token.PLUS, p.parseInfixExpression)
 	p.registerInfix(token.MINUS, p.parseInfixExpression)
@@ -58,6 +61,9 @@ func (p *Parser) addError(message string) {
 }
 
 func (p *Parser) advance() {
+	if p.currentAt >= len(p.tokens)-1 {
+		return
+	}
 	p.currentAt++
 	p.refreshCurrentToken()
 }
@@ -147,6 +153,7 @@ func (p *Parser) parseProgram() *ast.Program {
 }
 
 func (p *Parser) parseStatement() *ast.Statement {
+
 	var stmt ast.Statement
 	switch p.tokens[p.currentAt].Type {
 	case token.VAR:
@@ -156,18 +163,41 @@ func (p *Parser) parseStatement() *ast.Statement {
 	default:
 		stmt = p.parseExpressionStatement()
 	}
+	p.skipMeaningless()
 	return &stmt
 }
 
-func (p *Parser) parseEnd() {
-	isValidEnd := false
-	for p.currentToken.Type == token.SEMICOLON || p.currentToken.Type == token.LINE_BREAK {
+// func (p *Parser) parseEnd() {
+// 	isValidEnd := false
+// 	if p.currentToken.Type == token.EOF {
+// 		isValidEnd = true
+// 	}
+// 	if p.currentToken.Type == token.SEMICOLON || p.currentToken.Type == token.LINE_BREAK {
+// 		isValidEnd = true
+// 	}
+
+// 	for p.currentToken.Type == token.LINE_BREAK {
+// 		p.advance()
+// 	}
+
+// 	if p.currentToken.Type == token.SEMICOLON {
+// 		p.advance()
+// 		isValidEnd = true
+// 	}
+
+// 	if !isValidEnd {
+// 		p.addError(fmt.Sprintf("line %v; expected ';', but got %s", p.currentToken.Line, p.currentToken.RawToken))
+// 	}
+// }
+
+func (p *Parser) skipMeaningless() {
+	if p.nextToken().Type != token.LINE_BREAK && p.nextToken().Type != token.SEMICOLON && p.currentToken.Type != token.LINE_BREAK {
+		return
+	}
+	for p.nextToken().Type == token.LINE_BREAK || p.nextToken().Type == token.SEMICOLON {
 		p.advance()
-		isValidEnd = true
 	}
-	if !isValidEnd {
-		p.addError(fmt.Sprintf("line %v; expected ';', but got %s", p.currentToken.Line, p.currentToken.RawToken))
-	}
+	p.advance()
 }
 
 func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
@@ -175,7 +205,7 @@ func (p *Parser) parseExpressionStatement() *ast.ExpressionStatement {
 	expressionStatement.Token = p.currentToken
 	expressionStatement.Expression = p.parseExpression(LOWEST)
 	p.advance()
-	p.parseEnd()
+	// p.parseEnd()
 	return expressionStatement
 }
 
@@ -199,7 +229,7 @@ func (p *Parser) parseVarStatement() *ast.VarStatement {
 	p.advance()
 	varStatement.Value = p.parseExpression(LOWEST)
 	p.advance()
-	p.parseEnd()
+	// p.parseEnd()
 	return varStatement
 }
 
@@ -280,6 +310,13 @@ func (p *Parser) parseBoolean() ast.Expression {
 	}
 }
 
+func (p *Parser) parseStringLiteral() ast.Expression {
+	return &ast.StringLiteral{
+		Token: p.currentToken,
+		Value: p.currentToken.Literal.(string),
+	}
+}
+
 func (p *Parser) parseGroupedExpression() ast.Expression {
 	p.advance()
 	expression := p.parseExpression(LOWEST)
@@ -289,4 +326,114 @@ func (p *Parser) parseGroupedExpression() ast.Expression {
 	}
 	p.advance()
 	return expression
+}
+
+func (p *Parser) parseIfExpression() ast.Expression {
+	expression := &ast.IfExpression{
+		Token: p.currentToken,
+	}
+	p.advance() // ( を消費
+	if p.currentToken.Type != token.LEFT_PAREN {
+		p.addError(fmt.Sprintf("line %v; expected '(', but got %s", p.currentToken.Line, p.currentToken.RawToken))
+		return nil
+	}
+	p.advance() // 条件式の最初のやつを消費
+	expression.Condition = p.parseExpression(LOWEST)
+	p.advance() // ) を消費
+	if p.currentToken.Type != token.RIGHT_PAREN {
+		p.addError(fmt.Sprintf("line %v; expected ')', but got %s", p.currentToken.Line, p.currentToken.RawToken))
+		return nil
+	}
+	p.advance() // { を消費
+	if p.currentToken.Type != token.LEFT_BRACE {
+		p.addError(fmt.Sprintf("line %v; expected '{', but got %s", p.currentToken.Line, p.currentToken.RawToken))
+		return nil
+	}
+	expression.Consequence = p.parseBlockStatement()
+	p.advance() // } の次のやつを消費　else句かもしれないし、そうじゃないかもしれない
+
+	if p.currentToken.Type == token.ELSE {
+		p.advance() // { を消費
+		if p.currentToken.Type != token.LEFT_BRACE {
+			p.addError(fmt.Sprintf("line %v; expected '{', but got %s", p.currentToken.Line, p.currentToken.RawToken))
+			return nil
+		}
+		expression.Alternative = p.parseBlockStatement()
+		p.skipMeaningless()
+		// p.advance() // } の次のやつを消費
+	}
+	return expression
+}
+
+func (p *Parser) parseBlockStatement() *ast.BlockStatement {
+	blockStatement := &ast.BlockStatement{
+		Token: p.currentToken,
+	}
+	blockStatement.Statements = []ast.Statement{}
+	p.advance()
+	for p.currentToken.Type != token.RIGHT_BRACE && p.currentToken.Type != token.EOF {
+		p.skipMeaningless() // 改行じゃなくなるまで改行を消費
+		// ボディが空の場合
+		if p.currentToken.Type == token.RIGHT_BRACE || p.currentToken.Type == token.EOF {
+			p.errors = append(p.errors, fmt.Errorf("line %v: empty if body", p.currentToken.Line))
+			break
+		}
+		stmt := p.parseStatement()
+		if stmt != nil {
+			blockStatement.Statements = append(blockStatement.Statements, *stmt)
+		}
+	}
+	return blockStatement
+}
+
+func (p *Parser) parseFuncExpression() ast.Expression {
+	expression := &ast.FunctionExpression{
+		Token: p.currentToken,
+	}
+	p.advance()
+	if p.currentToken.Type != token.IDENTIFIER {
+		p.addError(fmt.Sprintf("line %v; expected identifier, but got %s", p.currentToken.Line, p.currentToken.RawToken))
+		return nil
+	}
+	expression.Name = p.parseIdentifier().(ast.Identifier)
+	p.advance()
+	if p.currentToken.Type != token.LEFT_PAREN {
+		p.addError(fmt.Sprintf("line %v; expected '(', but got %s", p.currentToken.Line, p.currentToken.RawToken))
+		return nil
+	}
+	expression.Parameters = p.parseFuncParameters()
+	p.advance()
+	if p.currentToken.Type != token.LEFT_BRACE {
+		p.addError(fmt.Sprintf("line %v; expected '{', but got %s", p.currentToken.Line, p.currentToken.RawToken))
+		return nil
+	}
+	expression.Body = p.parseBlockStatement()
+	return expression
+}
+
+func (p *Parser) parseFuncParameters() []ast.Identifier {
+	parameters := []ast.Identifier{}
+	if p.nextToken().Type == token.RIGHT_PAREN {
+		p.advance()
+		return parameters
+	}
+	p.advance()
+	for p.currentToken.Type != token.RIGHT_PAREN && p.currentToken.Type != token.EOF {
+		// p.skipMeaningless()
+		if p.currentToken.Type != token.IDENTIFIER {
+			p.addError(fmt.Sprintf("line %v; expected identifier, but got %s", p.currentToken.Line, p.currentToken.RawToken))
+			return nil
+		}
+		identifier := p.parseIdentifier().(ast.Identifier)
+		parameters = append(parameters, identifier)
+		p.advance()
+		if p.currentToken.Type != token.COMMA && p.currentToken.Type != token.RIGHT_PAREN {
+			p.addError(fmt.Sprintf("line %v; expected ',' or ')', but got %s", p.currentToken.Line, p.currentToken.RawToken))
+			return nil
+		}
+		if p.currentToken.Type == token.COMMA {
+			p.advance()
+		}
+	}
+	return parameters
 }

@@ -32,12 +32,16 @@ func runCmd() {
 func runFile() {
 	fmt.Println()
 	f, err := os.Open("test.onu")
+	if err != nil {
+		panic(err)
+	}
 	defer f.Close()
 	data := make([]byte, 1024)
 	count, err := f.Read(data)
 	if err != nil {
 		panic(err)
 	}
+
 	s := scanner.NewScanner(string(data[:count]))
 	parser := parser.NewParser(s)
 	program, err := parser.Parse()

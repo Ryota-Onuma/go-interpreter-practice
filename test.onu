@@ -1,1 +1,16 @@
-(-3 - 1) / 1.5 == 3
+func hoge(params1,params2) {
+    if (1 /2 ) {
+
+
+        var hoge = 1
+
+
+        hoge + 1
+        if ("hoge" == "fuga") {
+            return hoge
+        }
+
+    } else {
+        var fuga = a + 1
+    }
+}

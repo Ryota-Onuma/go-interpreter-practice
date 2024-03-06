@@ -34,3 +34,8 @@ func (es ExpressionStatement) statementNode() {}
 func (es ExpressionStatement) String() string {
 	return ""
 }
+
+type BlockStatement struct {
+	Token      token.Token
+	Statements []Statement
+}

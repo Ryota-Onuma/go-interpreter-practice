@@ -66,3 +66,37 @@ func (b Boolean) expressionNode() {}
 func (b Boolean) String() string {
 	return ""
 }
+
+type StringLiteral struct {
+	Token token.Token
+	Value string
+}
+
+func (sl StringLiteral) expressionNode() {}
+func (sl StringLiteral) String() string {
+	return ""
+}
+
+type IfExpression struct {
+	Token       token.Token
+	Condition   Expression
+	Consequence *BlockStatement
+	Alternative *BlockStatement
+}
+
+func (ie IfExpression) expressionNode() {}
+func (ie IfExpression) String() string {
+	return ""
+}
+
+type FunctionExpression struct {
+	Token      token.Token
+	Name       Identifier
+	Parameters []Identifier
+	Body       *BlockStatement
+}
+
+func (fe FunctionExpression) expressionNode() {}
+func (fe FunctionExpression) String() string {
+	return ""
+}

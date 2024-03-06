@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"lox-by-go/token"
 	"strconv"
+	"strings"
 )
 
 type Scanner struct {
@@ -264,7 +265,10 @@ func (s *Scanner) createString() {
 
 	s.advance()
 	t := s.createToken(token.STRING)
+
 	textLiteral := string([]rune(s.source)[s.start+1 : s.currentAt+1])
+	// \"を消す
+	textLiteral = strings.Replace(textLiteral, `"`, "", -1)
 	t.Literal = textLiteral
 	s.addToken(t)
 }
