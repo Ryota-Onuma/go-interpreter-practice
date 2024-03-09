@@ -167,29 +167,6 @@ func (p *Parser) parseStatement() *ast.Statement {
 	return &stmt
 }
 
-// func (p *Parser) parseEnd() {
-// 	isValidEnd := false
-// 	if p.currentToken.Type == token.EOF {
-// 		isValidEnd = true
-// 	}
-// 	if p.currentToken.Type == token.SEMICOLON || p.currentToken.Type == token.LINE_BREAK {
-// 		isValidEnd = true
-// 	}
-
-// 	for p.currentToken.Type == token.LINE_BREAK {
-// 		p.advance()
-// 	}
-
-// 	if p.currentToken.Type == token.SEMICOLON {
-// 		p.advance()
-// 		isValidEnd = true
-// 	}
-
-// 	if !isValidEnd {
-// 		p.addError(fmt.Sprintf("line %v; expected ';', but got %s", p.currentToken.Line, p.currentToken.RawToken))
-// 	}
-// }
-
 func (p *Parser) skipMeaningless() {
 	if p.nextToken().Type != token.LINE_BREAK && p.nextToken().Type != token.SEMICOLON && p.currentToken.Type != token.LINE_BREAK {
 		return
@@ -219,7 +196,8 @@ func (p *Parser) parseVarStatement() *ast.VarStatement {
 		return nil
 	}
 
-	varStatement.Name = p.parseIdentifier().(ast.Identifier)
+	name := p.parseIdentifier().(*ast.Identifier)
+	varStatement.Name = name
 
 	p.advance()
 	if p.currentToken.Type != token.EQUAL {
@@ -229,7 +207,6 @@ func (p *Parser) parseVarStatement() *ast.VarStatement {
 	p.advance()
 	varStatement.Value = p.parseExpression(LOWEST)
 	p.advance()
-	// p.parseEnd()
 	return varStatement
 }
 
@@ -261,7 +238,7 @@ func (p *Parser) parseExpression(priority int) ast.Expression {
 }
 
 func (p *Parser) parseIdentifier() ast.Expression {
-	return ast.Identifier{
+	return &ast.Identifier{
 		Token: p.currentToken,
 		Value: p.currentToken.RawToken,
 	}
@@ -395,7 +372,7 @@ func (p *Parser) parseFuncExpression() ast.Expression {
 		p.addError(fmt.Sprintf("line %v; expected identifier, but got %s", p.currentToken.Line, p.currentToken.RawToken))
 		return nil
 	}
-	expression.Name = p.parseIdentifier().(ast.Identifier)
+	expression.Name = p.parseIdentifier().(*ast.Identifier)
 	p.advance()
 	if p.currentToken.Type != token.LEFT_PAREN {
 		p.addError(fmt.Sprintf("line %v; expected '(', but got %s", p.currentToken.Line, p.currentToken.RawToken))
@@ -411,8 +388,8 @@ func (p *Parser) parseFuncExpression() ast.Expression {
 	return expression
 }
 
-func (p *Parser) parseFuncParameters() []ast.Identifier {
-	parameters := []ast.Identifier{}
+func (p *Parser) parseFuncParameters() []*ast.Identifier {
+	parameters := []*ast.Identifier{}
 	if p.nextToken().Type == token.RIGHT_PAREN {
 		p.advance()
 		return parameters
@@ -424,7 +401,7 @@ func (p *Parser) parseFuncParameters() []ast.Identifier {
 			p.addError(fmt.Sprintf("line %v; expected identifier, but got %s", p.currentToken.Line, p.currentToken.RawToken))
 			return nil
 		}
-		identifier := p.parseIdentifier().(ast.Identifier)
+		identifier := p.parseIdentifier().(*ast.Identifier)
 		parameters = append(parameters, identifier)
 		p.advance()
 		if p.currentToken.Type != token.COMMA && p.currentToken.Type != token.RIGHT_PAREN {

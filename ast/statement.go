@@ -6,7 +6,7 @@ import (
 
 type VarStatement struct {
 	Token token.Token
-	Name  Identifier
+	Name  *Identifier
 	Value Expression
 }
 
@@ -38,4 +38,9 @@ func (es ExpressionStatement) String() string {
 type BlockStatement struct {
 	Token      token.Token
 	Statements []Statement
+}
+
+func (bs BlockStatement) statementNode() {}
+func (bs BlockStatement) String() string {
+	return ""
 }

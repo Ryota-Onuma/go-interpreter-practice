@@ -9,8 +9,8 @@ type Identifier struct {
 	Value string
 }
 
-func (i Identifier) expressionNode() {}
-func (i Identifier) String() string {
+func (i *Identifier) expressionNode() {}
+func (i *Identifier) String() string {
 	return ""
 }
 
@@ -19,8 +19,8 @@ type IntegerLiteral struct {
 	Value int
 }
 
-func (il IntegerLiteral) expressionNode() {}
-func (il IntegerLiteral) String() string {
+func (il *IntegerLiteral) expressionNode() {}
+func (il *IntegerLiteral) String() string {
 	return ""
 }
 
@@ -40,8 +40,8 @@ type PrefixExpression struct {
 	Right    Expression
 }
 
-func (pe PrefixExpression) expressionNode() {}
-func (pe PrefixExpression) String() string {
+func (pe *PrefixExpression) expressionNode() {}
+func (pe *PrefixExpression) String() string {
 	return ""
 }
 
@@ -52,8 +52,8 @@ type InfixExpression struct {
 	Right    Expression
 }
 
-func (ie InfixExpression) expressionNode() {}
-func (ie InfixExpression) String() string {
+func (ie *InfixExpression) expressionNode() {}
+func (ie *InfixExpression) String() string {
 	return ""
 }
 
@@ -62,8 +62,8 @@ type Boolean struct {
 	Value bool
 }
 
-func (b Boolean) expressionNode() {}
-func (b Boolean) String() string {
+func (b *Boolean) expressionNode() {}
+func (b *Boolean) String() string {
 	return ""
 }
 
@@ -72,8 +72,8 @@ type StringLiteral struct {
 	Value string
 }
 
-func (sl StringLiteral) expressionNode() {}
-func (sl StringLiteral) String() string {
+func (sl *StringLiteral) expressionNode() {}
+func (sl *StringLiteral) String() string {
 	return ""
 }
 
@@ -84,19 +84,19 @@ type IfExpression struct {
 	Alternative *BlockStatement
 }
 
-func (ie IfExpression) expressionNode() {}
-func (ie IfExpression) String() string {
+func (ie *IfExpression) expressionNode() {}
+func (ie *IfExpression) String() string {
 	return ""
 }
 
 type FunctionExpression struct {
 	Token      token.Token
-	Name       Identifier
-	Parameters []Identifier
+	Name       *Identifier
+	Parameters []*Identifier
 	Body       *BlockStatement
 }
 
-func (fe FunctionExpression) expressionNode() {}
-func (fe FunctionExpression) String() string {
+func (fe *FunctionExpression) expressionNode() {}
+func (fe *FunctionExpression) String() string {
 	return ""
 }
