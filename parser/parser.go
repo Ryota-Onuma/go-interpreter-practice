@@ -2,9 +2,9 @@ package parser
 
 import (
 	"fmt"
-	"lox-by-go/ast"
-	"lox-by-go/scanner"
-	"lox-by-go/token"
+	"go-interpreter-practice/ast"
+	"go-interpreter-practice/scanner"
+	"go-interpreter-practice/token"
 	"strings"
 )
 
@@ -48,6 +48,7 @@ func NewParser(s *scanner.Scanner) *Parser {
 	p.registerInfix(token.LESS_EQUAL, p.parseInfixExpression)
 	p.registerInfix(token.GREATER, p.parseInfixExpression)
 	p.registerInfix(token.GREATER_EQUAL, p.parseInfixExpression)
+	p.registerInfix(token.LEFT_PAREN, p.parseCallExpression)
 
 	return p
 }
@@ -153,7 +154,6 @@ func (p *Parser) parseProgram() *ast.Program {
 }
 
 func (p *Parser) parseStatement() *ast.Statement {
-
 	var stmt ast.Statement
 	switch p.tokens[p.currentAt].Type {
 	case token.VAR:
@@ -368,12 +368,11 @@ func (p *Parser) parseFuncExpression() ast.Expression {
 		Token: p.currentToken,
 	}
 	p.advance()
-	if p.currentToken.Type != token.IDENTIFIER {
-		p.addError(fmt.Sprintf("line %v; expected identifier, but got %s", p.currentToken.Line, p.currentToken.RawToken))
-		return nil
+	if p.currentToken.Type == token.IDENTIFIER {
+		expression.Name = p.parseIdentifier().(*ast.Identifier)
+		p.advance()
 	}
-	expression.Name = p.parseIdentifier().(*ast.Identifier)
-	p.advance()
+
 	if p.currentToken.Type != token.LEFT_PAREN {
 		p.addError(fmt.Sprintf("line %v; expected '(', but got %s", p.currentToken.Line, p.currentToken.RawToken))
 		return nil
@@ -396,7 +395,7 @@ func (p *Parser) parseFuncParameters() []*ast.Identifier {
 	}
 	p.advance()
 	for p.currentToken.Type != token.RIGHT_PAREN && p.currentToken.Type != token.EOF {
-		// p.skipMeaningless()
+		p.skipMeaningless()
 		if p.currentToken.Type != token.IDENTIFIER {
 			p.addError(fmt.Sprintf("line %v; expected identifier, but got %s", p.currentToken.Line, p.currentToken.RawToken))
 			return nil
@@ -413,4 +412,40 @@ func (p *Parser) parseFuncParameters() []*ast.Identifier {
 		}
 	}
 	return parameters
+}
+
+func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
+	expression := &ast.CallExpression{
+		Token:    p.currentToken,
+		Function: &function,
+	}
+	expression.Arguments = p.parseCallArguments()
+	if p.currentToken.Type != token.RIGHT_PAREN {
+		p.addError(fmt.Sprintf("line %v; expected ')', but got %s", p.currentToken.Line, p.currentToken.RawToken))
+		return nil
+	}
+	return expression
+}
+
+func (p *Parser) parseCallArguments() []*ast.Expression {
+	args := []*ast.Expression{}
+	if p.nextToken().Type == token.RIGHT_PAREN {
+		p.advance()
+		return args
+	}
+	p.advance()
+	for p.currentToken.Type != token.RIGHT_PAREN && p.currentToken.Type != token.EOF {
+		p.skipMeaningless()
+		arg := p.parseExpression(LOWEST)
+		args = append(args, &arg)
+		p.advance()
+		if p.currentToken.Type != token.COMMA && p.currentToken.Type != token.RIGHT_PAREN {
+			p.addError(fmt.Sprintf("line %v; expected ',' or ')', but got %s", p.currentToken.Line, p.currentToken.RawToken))
+			return nil
+		}
+		if p.currentToken.Type == token.COMMA {
+			p.advance()
+		}
+	}
+	return args
 }

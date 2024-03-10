@@ -1,8 +1,8 @@
 package evaluator
 
 import (
-	"lox-by-go/ast"
-	"lox-by-go/object"
+	"go-interpreter-practice/ast"
+	"go-interpreter-practice/object"
 )
 
 func Eval(node ast.Node, env *object.Environment) object.Object {
@@ -72,6 +72,20 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return object.NewError("undefined identifier %v", node.Value)
 		}
 		return val
+	case *ast.FunctionExpression:
+		params := node.Parameters
+		body := node.Body
+		return &object.Function{Parameters: params, Body: body, Env: env}
+	case *ast.CallExpression:
+		function := Eval(*node.Function, env)
+		if isError(function) {
+			return function
+		}
+		args := evalExpressions(node.Arguments, env)
+		if len(args) == 1 && isError(args[0]) {
+			return args[0]
+		}
+		return applyFunction(function, args)
 	case *ast.IntegerLiteral:
 		return object.NewInteger(node.Value)
 	case *ast.FloatLiteral:
@@ -225,4 +239,41 @@ func isError(obj object.Object) bool {
 		return obj.Type() == object.ERROR
 	}
 	return false
+}
+
+func evalExpressions(expressions []*ast.Expression, env *object.Environment) []object.Object {
+	var results []object.Object
+	for _, exp := range expressions {
+		evaluated := Eval(*exp, env)
+		if isError(evaluated) {
+			return []object.Object{evaluated}
+		}
+		results = append(results, evaluated)
+	}
+	return results
+}
+
+func applyFunction(fn object.Object, args []object.Object) object.Object {
+	function, ok := fn.(*object.Function)
+	if !ok {
+		return object.NewError("not a function %v", fn.Type())
+	}
+	extendedEnv := extendedFunctionEnv(*function, args)
+	evaluated := Eval(function.Body, extendedEnv)
+	return unwrapReturnValue(evaluated)
+}
+
+func extendedFunctionEnv(fn object.Function, args []object.Object) *object.Environment {
+	extendedEnv := object.NewEnclosedEnvironment(fn.Env)
+	for i, param := range fn.Parameters {
+		extendedEnv.Set(param.Value, args[i])
+	}
+	return extendedEnv
+}
+
+func unwrapReturnValue(obj object.Object) object.Object {
+	if returnValue, ok := obj.(*object.ReturnValue); ok {
+		return returnValue.Value
+	}
+	return obj
 }

@@ -1,7 +1,9 @@
 package object
 
 import (
+	"bytes"
 	"fmt"
+	"go-interpreter-practice/ast"
 	"strconv"
 )
 
@@ -14,13 +16,14 @@ type Object interface {
 }
 
 const (
-	INTEGER ObjectType = "INTEGER"
-	FLOAT   ObjectType = "FLOAT"
-	STRING  ObjectType = "STRING"
-	BOOLEAN ObjectType = "BOOLEAN"
-	NIL     ObjectType = "NIL"
-	ERROR   ObjectType = "ERROR"
-	RETURN  ObjectType = "RETURN"
+	INTEGER  ObjectType = "INTEGER"
+	FLOAT    ObjectType = "FLOAT"
+	STRING   ObjectType = "STRING"
+	BOOLEAN  ObjectType = "BOOLEAN"
+	NIL      ObjectType = "NIL"
+	ERROR    ObjectType = "ERROR"
+	RETURN   ObjectType = "RETURN"
+	FUNCTION ObjectType = "FUNCTION"
 )
 
 type Integer struct {
@@ -149,6 +152,35 @@ func (rv *ReturnValue) IsTruthy() bool {
 	return rv.Value.IsTruthy()
 }
 
+type Function struct {
+	Parameters []*ast.Identifier
+	Body       *ast.BlockStatement
+	Env        *Environment
+}
+
+func (f *Function) Type() ObjectType {
+	return FUNCTION
+}
+
+func (f *Function) String() string {
+	var out bytes.Buffer
+	out.WriteString("fn(")
+	for i, p := range f.Parameters {
+		out.WriteString(p.String())
+		if i != len(f.Parameters)-1 {
+			out.WriteString(", ")
+		}
+	}
+	out.WriteString(") {\n")
+	out.WriteString(f.Body.String())
+	out.WriteString("\n}")
+	return out.String()
+}
+
+func (f *Function) IsTruthy() bool {
+	return true
+}
+
 func (e *Error) IsTruthy() bool {
 	return false
 }
@@ -163,6 +195,7 @@ func IsNumber(obj Object) bool {
 
 type Environment struct {
 	store map[string]Object
+	outer *Environment
 }
 
 func NewEnvironment() *Environment {
@@ -176,5 +209,15 @@ func (e *Environment) Set(name string, value Object) {
 
 func (e *Environment) Get(name string) (Object, bool) {
 	obj, ok := e.store[name]
+	if !ok && e.outer != nil {
+		obj, ok := e.outer.Get(name)
+		return obj, ok
+	}
 	return obj, ok
+}
+
+func NewEnclosedEnvironment(outer *Environment) *Environment {
+	env := NewEnvironment()
+	env.outer = outer
+	return env
 }

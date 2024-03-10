@@ -2,7 +2,7 @@ package scanner
 
 import (
 	"fmt"
-	"lox-by-go/token"
+	"go-interpreter-practice/token"
 	"testing"
 )
 

@@ -7,10 +7,10 @@ import (
 	"os/signal"
 	"syscall"
 
-	"lox-by-go/evaluator"
-	"lox-by-go/object"
-	"lox-by-go/parser"
-	"lox-by-go/scanner"
+	"go-interpreter-practice/evaluator"
+	"go-interpreter-practice/object"
+	"go-interpreter-practice/parser"
+	"go-interpreter-practice/scanner"
 )
 
 func main() {
@@ -47,6 +47,7 @@ func execWithFile(filePath string) {
 	if len(parser.GetErrors()) > 0 {
 		for _, e := range parser.GetErrors() {
 			io.WriteString(os.Stdout, e.Error())
+			io.WriteString(os.Stdout, "\n")
 		}
 		return
 	}

@@ -1,6 +1,6 @@
 package scanner
 
-import "lox-by-go/token"
+import "go-interpreter-practice/token"
 
 var keywords = map[string]token.TokenType{
 	"and":    token.AND,

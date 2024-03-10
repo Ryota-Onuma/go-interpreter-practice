@@ -1,7 +1,5 @@
-var hoge = "hoge"
-if (hoge) {
-    if (1+1 == 2){
-        return hoge + "fuga"
-    }
-    return 123
+var sum = func(num1,num2){
+    return num1 + num2
 }
+
+sum(1,sum(1,2))

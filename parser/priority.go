@@ -1,7 +1,7 @@
 package parser
 
 import (
-	"lox-by-go/token"
+	"go-interpreter-practice/token"
 )
 
 const (
@@ -26,4 +26,5 @@ var priorityMap = map[token.TokenType]int{
 	token.MINUS:         SUM,
 	token.SLASH:         PRODUCT,
 	token.STAR:          PRODUCT,
+	token.LEFT_PAREN:    CALL,
 }

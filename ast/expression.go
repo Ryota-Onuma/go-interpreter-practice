@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"lox-by-go/token"
+	"go-interpreter-practice/token"
 )
 
 type Identifier struct {
@@ -98,5 +98,16 @@ type FunctionExpression struct {
 
 func (fe *FunctionExpression) expressionNode() {}
 func (fe *FunctionExpression) String() string {
+	return ""
+}
+
+type CallExpression struct {
+	Token     token.Token
+	Function  *Expression
+	Arguments []*Expression
+}
+
+func (ce *CallExpression) expressionNode() {}
+func (ce *CallExpression) String() string {
 	return ""
 }

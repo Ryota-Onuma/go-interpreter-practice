@@ -1,7 +1,7 @@
 package ast
 
 import (
-	"lox-by-go/token"
+	"go-interpreter-practice/token"
 )
 
 type VarStatement struct {
@@ -10,8 +10,8 @@ type VarStatement struct {
 	Value Expression
 }
 
-func (vs VarStatement) statementNode() {}
-func (vs VarStatement) String() string {
+func (vs *VarStatement) statementNode() {}
+func (vs *VarStatement) String() string {
 	return ""
 }
 
@@ -20,8 +20,8 @@ type ReturnStatement struct {
 	ReturnValue Expression
 }
 
-func (es ReturnStatement) statementNode() {}
-func (rs ReturnStatement) String() string {
+func (es *ReturnStatement) statementNode() {}
+func (rs *ReturnStatement) String() string {
 	return ""
 }
 
@@ -30,8 +30,8 @@ type ExpressionStatement struct {
 	Expression Expression
 }
 
-func (es ExpressionStatement) statementNode() {}
-func (es ExpressionStatement) String() string {
+func (es *ExpressionStatement) statementNode() {}
+func (es *ExpressionStatement) String() string {
 	return ""
 }
 
@@ -40,7 +40,7 @@ type BlockStatement struct {
 	Statements []Statement
 }
 
-func (bs BlockStatement) statementNode() {}
-func (bs BlockStatement) String() string {
+func (bs *BlockStatement) statementNode() {}
+func (bs *BlockStatement) String() string {
 	return ""
 }
